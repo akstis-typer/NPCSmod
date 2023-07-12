@@ -147,9 +147,9 @@ end
 function SurvivorInfoWindowCreate()
 	local FONT_HGT_SMALL = getTextManager():getFontHeight(UIFont.Small)
 	mySurvivorInfoWindow = SurvivorInfoWindow:new(300, 270, FONT_HGT_SMALL * 6 + 175, FONT_HGT_SMALL * 10 + 500)
-	mySurvivorInfoWindow:addToUIManager()
-	mySurvivorInfoWindow:setVisible(false)
-	mySurvivorInfoWindow.pin = true
+	mySurvivorInfoWindow:addToUIManager();
+	mySurvivorInfoWindow:setVisible(false);
+	mySurvivorInfoWindow.pin = true;
 	mySurvivorInfoWindow.resizable = true
 	
 	-- build compatibility check---
@@ -163,4 +163,4 @@ function SurvivorInfoWindowCreate()
 	
 end
 
-Events.OnGameStart.Add(SurvivorInfoWindowCreate); --creates error on enter
+Events.OnGameStart.Add(SurvivorInfoWindowCreate);

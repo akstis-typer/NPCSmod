@@ -1,86 +1,5 @@
 require "0_Utilities/SuperSurvivorWeaponsList"
 
-function SuperSurvivorsInit() -- Actually an enter point
-
-	print("GAMESTART!")
-
-	GroupWindowCreate()
-	
-	SurvivorsCreatePVPButton()
-
-	if(isModEnabled("Achievement")) and (AchievementList ~= nil) then 
-		AchievementList["MakingFriends"] = {"Making Friends", "Get someone to join your group"}
-		AchievementsEnabled = true		
-	else AchievementsEnabled = false end
-
-	SurvivorTogglePVP()
-
-	if(IsoPlayer.getCoopPVP() == true) then SurvivorTogglePVP() end
-	if(Option_ForcePVP == 1) then SurvivorTogglePVP() end
-	
-	local player = getSpecificPlayer(0)
-	player:getModData().isHostile = false
-	player:getModData().ID = 0
-
-	if(player:getX() >= 7679 and player:getX() <= 7680) and (player:getY() >= 11937 and player:getY() <= 11938) then -- if spawn in prizon
-		local keyid = player:getBuilding():getDef():getKeyId();
-		
-		if(keyid) then
-			local key = player:getInventory():AddItem("Base.Key1");
-			key:setKeyId(keyid) ;
-			player:getCurrentSquare():getE():AddWorldInventoryItem(key,0.5,0.5, 0); -- key on the floor now
-			player:getInventory():Remove(key);
-		end
-		
-		--local zlist = getCell():getZombieList() ;
-		--if(zlist ~= nil) then
-		--	for i=0, zlist:size()-1 do
-		--		zlist:get(i):removeFromWorld();
-		--	end
-		--end
-		
-		--PVPDefault = true 	-- true or false : should pvp be on or off at game start true=on false=off
-		--ChanceToSpawnWithGun = 100 	-- choose from 0 to 100 (this is a % but dont put a % after the number)
-		--ChanceToBeHostileNPC = 100
-		
-		local DeadGuardSquare = getCell():getGridSquare(7685,11937,1);
-		if(DeadGuardSquare ~= nil) then
-			local SuperSurvivorDeadGuard = SSM:spawnSurvivor(false,DeadGuardSquare);
-			local DeadGuard = SuperSurvivorDeadGuard.player
-			if(isModEnabled("Hydrocraft")) then
-				DeadGuard:getInventory():AddItem("Hydrocraft.HCArmarmorswat");
-				DeadGuard:getInventory():AddItem("Hydrocraft.HCArmorswat");
-				DeadGuard:getInventory():AddItem("Hydrocraft.HCHelmswat");
-				DeadGuard:getInventory():AddItem("Hydrocraft.HCLegarmorswat");
-				DeadGuard:getInventory():AddItem("Hydrocraft.HCBootriot");
-				DeadGuard:getInventory():AddItem("Hydrocraft.HCGloveriot");
-				DeadGuard:getInventory():AddItem("Hydrocraft.HCShieldriot");
-				DeadGuard:getInventory():AddItem("Hydrocraft.HCGPS");
-			end
-			if(isModEnabled("ArmorMod")) then
-				DeadGuard:getInventory():AddItem("Armor.ArmorArmarmorswat");
-				DeadGuard:getInventory():AddItem("Armor.ArmorArmorswat");
-				DeadGuard:getInventory():AddItem("Armor.ArmorHelmswat");
-				DeadGuard:getInventory():AddItem("Armor.ArmorLegarmorswat");
-				DeadGuard:getInventory():AddItem("Armor.ArmorBootriot");
-				DeadGuard:getInventory():AddItem("Armor.ArmorGloveriot");
-				DeadGuard:getInventory():AddItem("Armor.ArmorShieldriot");
-			end
-			if(isModEnabled("ORGM")) then
-				DeadGuard:getInventory():AddItem("ORGM.Uzi");
-				DeadGuard:getInventory():AddItem("ORGM.Ammo_9x19mm_HP_Can");
-				DeadGuard:getInventory():AddItem("ORGM.Ammo_9x19mm_HP_Can");
-			else
-				SuperSurvivorDeadGuard:giveWeapon("Base.Pistol");
-			end
-			
-			DeadGuard:Kill(nil);
-			
-		end
-	end
-end
-Events.OnGameStart.Add(SuperSurvivorsInit)
-
 -- To-Do: Change OnTickTicks to NPC_SSM_OnTicks , reason is , I don't know if other mods may try to call that variable.
 OnTickTicks = 0
 SuperSurvivorSelectAnArea = false
@@ -224,18 +143,8 @@ end
 
 
 function SuperSurvivorRandomSpawn(square)
+	
 
-	-- clear the immediate area
-	local zlist = getCell():getZombieList();
-	if(zlist ~= nil) then
-		for i=zlist:size()-1, 0, -1 do
-			z = zlist:get(i);
-			if z ~= nil and (math.abs(z:getX() - square:getX()) < 2) and (math.abs(z:getY() - square:getY()) < 2) and (z:getZ() == square:getZ()) then
-				print("delete zombie " .. z:getX() .. " " .. square:getX() .. " " .. z:getY() .. " " .. square:getY())
-				z:removeFromWorld();
-			end
-		end
-	end
 
 	local hoursSurvived = math.floor(getGameTime():getWorldAgeHours())
 	local ASuperSurvivor = SSM:spawnSurvivor(nil,square)
@@ -247,12 +156,24 @@ function SuperSurvivorRandomSpawn(square)
 		if(ZombRand(100) < (ChanceToSpawnWithGun + math.floor(hoursSurvived/48))) then 
 			ASuperSurvivor:giveWeapon(getWeapon(RangeWeapons[ZombRand(1,#RangeWeapons)]),true) 
 			-- make sure they have at least some ability to use the gun
-			ASuperSurvivor.player:LevelPerk(Perks.FromString("Aiming")); -- TODO: add a method that take that 2 lines of code into one function levelUp(player, perk, level);
+			ASuperSurvivor.player:LevelPerk(Perks.FromString("Aiming"));
 			ASuperSurvivor.player:LevelPerk(Perks.FromString("Aiming"));
 		elseif(ZombRand(100) < (ChanceToSpawnWithWep + math.floor(hoursSurvived/48))) then 
 			ASuperSurvivor:giveWeapon(MeleWeapons[ZombRand(1,#MeleWeapons)],true) 
 		end
-		if(ZombRand(100) < FinalChanceToBeHostile) then ASuperSurvivor:setHostile(true) end
+		if(ZombRand(100) < FinalChanceToBeHostile ) then ASuperSurvivor:setHostile(true) end
+	end
+
+	-- clear the immediate area
+	local zlist = getCell():getZombieList();
+	if(zlist ~= nil) then
+		for i=zlist:size()-1, 0, -1 do
+			z = zlist:get(i);
+			if z ~= nil and (math.abs(z:getX() - square:getX()) < 2) and (math.abs(z:getY() - square:getY()) < 2) and (z:getZ() == square:getZ()) then
+				print("delete zombie " .. z:getX() .. " " .. square:getX() .. " " .. z:getY() .. " " .. square:getY())
+				z:removeFromWorld();
+			end
+		end
 	end
 
 	return ASuperSurvivor
@@ -348,8 +269,9 @@ function SuperSurvivorsLoadGridsquare(square)
 					if(RaiderGroup:getID() == getSpecificPlayer(0):getModData().Group) then RaiderGroup = SSGM:newGroup() end
 					local GroupSize = ZombRand(2,5) + math.floor(hours/(24*30))
 					if (GroupSize > 10) then GroupSize = 10 end
-					if (GroupSize < 2) then GroupSize = 2 end -- Is taht even neede? Groupsize cant be less than 2 in any case
+					if (GroupSize < 2) then GroupSize = 2 end
 					local oldGunSpawnChance = ChanceToSpawnWithGun 
+					ChanceToSpawnWithGun = ChanceToSpawnWithGun --* 1.5
 					local groupHostility
 					local Leader
 					for i=1, GroupSize do
@@ -382,6 +304,7 @@ function SuperSurvivorsLoadGridsquare(square)
 end
 Events.LoadGridsquare.Add(SuperSurvivorsLoadGridsquare);
 
+
 function SuperSurvivorOnCreateLivingChar(character)
 	
 	print("OnCreateLivingChar:"..tostring(character))
@@ -390,9 +313,110 @@ function SuperSurvivorOnCreateLivingChar(character)
 end
 Events.OnCreateLivingCharacter.Add(SuperSurvivorOnCreateLivingChar)
 
-function SuperSurvivorsOnLoad()
+function SuperSurvivorsInit()
 
+	print("GAMESTART!")
+
+	GroupWindowCreate()
+	
+	SurvivorsCreatePVPButton()
+
+	if(isModEnabled("Achievement")) and (AchievementList ~= nil) then 
+		AchievementList["MakingFriends"] = {"Making Friends", "Get someone to join your group"}
+		AchievementsEnabled = true		
+	else AchievementsEnabled = false end
+
+	SurvivorTogglePVP()
+
+	if(IsoPlayer.getCoopPVP() == true) then SurvivorTogglePVP() end
+	if(Option_ForcePVP == 1) then SurvivorTogglePVP() end
+	
+	local player = getSpecificPlayer(0)
+	player:getModData().isHostile = false
+	player:getModData().ID = 0
+
+	--print("prizon")
+	--print(player:getX())
+	--print(player:getY())
+	--if(player:getX() >= 7590 and player:getX() < 7780) and (player:getY() <= 11978 and player:getY() > 11766) then -- if spawn in prizon
+	if(player:getX() >= 7679 and player:getX() <= 7680) and (player:getY() >= 11937 and player:getY() <= 11938) then -- if spawn in prizon
+		local keyid = player:getBuilding():getDef():getKeyId();
+		
+		if(keyid) then
+		local key = player:getInventory():AddItem("Base.Key1");
+		key:setKeyId(keyid) ;
+		player:getCurrentSquare():getE():AddWorldInventoryItem(key,0.5,0.5, 0);
+		player:getInventory():Remove(key);
+		end
+		
+		--local zlist = getCell():getZombieList() ;
+		--if(zlist ~= nil) then
+		--	for i=0, zlist:size()-1 do
+		--		zlist:get(i):removeFromWorld();
+		--	end
+		--end
+		
+		--PVPDefault = true 	-- true or false : should pvp be on or off at game start true=on false=off
+		--ChanceToSpawnWithGun = 100 	-- choose from 0 to 100 (this is a % but dont put a % after the number)
+		--ChanceToBeHostileNPC = 100
+		
+		local DeadGuardSquare = getCell():getGridSquare(7685,11937,1);
+		--local DeadGuardSquare = nil
+		if(DeadGuardSquare ~= nil) then
+			local SuperSurvivorDeadGuard = SSM:spawnSurvivor(false,DeadGuardSquare);
+			local DeadGuard = SuperSurvivorDeadGuard.player
+			if(isModEnabled("Hydrocraft")) then
+				DeadGuard:getInventory():AddItem("Hydrocraft.HCArmarmorswat");
+				DeadGuard:getInventory():AddItem("Hydrocraft.HCArmorswat");
+				DeadGuard:getInventory():AddItem("Hydrocraft.HCHelmswat");
+				DeadGuard:getInventory():AddItem("Hydrocraft.HCLegarmorswat");
+				DeadGuard:getInventory():AddItem("Hydrocraft.HCBootriot");
+				DeadGuard:getInventory():AddItem("Hydrocraft.HCGloveriot");
+				DeadGuard:getInventory():AddItem("Hydrocraft.HCShieldriot");
+				DeadGuard:getInventory():AddItem("Hydrocraft.HCGPS");
+			end
+			if(isModEnabled("ArmorMod")) then
+				DeadGuard:getInventory():AddItem("Armor.ArmorArmarmorswat");
+				DeadGuard:getInventory():AddItem("Armor.ArmorArmorswat");
+				DeadGuard:getInventory():AddItem("Armor.ArmorHelmswat");
+				DeadGuard:getInventory():AddItem("Armor.ArmorLegarmorswat");
+				DeadGuard:getInventory():AddItem("Armor.ArmorBootriot");
+				DeadGuard:getInventory():AddItem("Armor.ArmorGloveriot");
+				DeadGuard:getInventory():AddItem("Armor.ArmorShieldriot");
+			end
+			if(isModEnabled("ORGM")) then
+				DeadGuard:getInventory():AddItem("ORGM.Uzi");
+				DeadGuard:getInventory():AddItem("ORGM.Ammo_9x19mm_HP_Can");
+				DeadGuard:getInventory():AddItem("ORGM.Ammo_9x19mm_HP_Can");
+			else
+				SuperSurvivorDeadGuard:giveWeapon("Base.Pistol");
+				--DeadGuard:getInventory():AddItem("Base.Pistol");
+				--DeadGuard:getInventory():AddItem("Base.BulletsBox");
+				--DeadGuard:getInventory():AddItem("Base.BulletsBox");
+				--DeadGuard:getInventory():AddItem("Base.BulletsBox");
+				--DeadGuard:getInventory():AddItem("Base.BulletsBox");
+			end
+			
+			
+			DeadGuard:Kill(nil);
+			
+		end
+		
+	end
+	
+	
+	
+	
+	
 end
+Events.OnGameStart.Add(SuperSurvivorsInit)
+
+function SuperSurvivorsOnLoad()
+	
+
+	
+end
+
 --Events.OnLoad.Add(SuperSurvivorsOnLoad)
 
 
@@ -418,6 +442,7 @@ end
 --Events.OnCharacterCollide.Add(SuperSurvivorsOnCharacterCollide)
 
 function SuperSurvivorsOnSwing(player,weapon)
+	--print("onswing")
 
 	local ID = player:getModData().ID
 	if(ID ~= nil) then
@@ -469,23 +494,34 @@ Events.OnWeaponSwing.Add(SuperSurvivorsOnSwing)
 function SuperSurvivorsHotKeyOrder(index)
 
 	local order, isListening
-	if(index <= #Orders) then
-		order = Orders[index]
-		isListening = false
-	else --single
-		order = Orders[(index - #Orders)]
-		isListening = true
-	end
-		local myGroup = SSM:Get(0):getGroup()
-		if(myGroup) then
-			local myMembers = myGroup:getMembersInRange(SSM:Get(0):Get(),25,isListening)
-			for i=1, #myMembers do
-				SurvivorOrder(nil,myMembers[i].player,order,nil)
-			end					
-		end
-	end
+			if(index <= #Orders) then
+				order = Orders[index]
+				isListening = false
+			else --single
+				order = Orders[(index - #Orders)]
+				isListening = true
+			end
+				local myGroup = SSM:Get(0):getGroup()
+				if(myGroup) then
+					local myMembers = myGroup:getMembersInRange(SSM:Get(0):Get(),25,isListening)
+					for i=1, #myMembers do
+						SurvivorOrder(nil,myMembers[i].player,order,nil)
+					end					
+				end
+			
+
 end
 
+--[[
+--x1,x2,y1,y2
+local ZNoSpawnAreas = {
+{1,2,4,5}
+}
+function SuperSurvivorDeSpawnZombies(thissquare)
+
+	if(thissquare)
+
+end]]
 function SuperSurvivorTest(ob1)
 	
 	local o = ob1

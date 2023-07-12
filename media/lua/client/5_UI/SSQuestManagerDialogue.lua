@@ -210,4 +210,4 @@ function DialogueWindowCreate()
 	
 end
 
-Events.OnGameStart.Add(DialogueWindowCreate); --Creates error when enter the game
+Events.OnGameStart.Add(DialogueWindowCreate);
