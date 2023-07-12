@@ -14,7 +14,6 @@ function DialogueWindow:new(x, y, width, height)
 	self.__index = self;
 	o.title = "NPC Dialogue";
 	o.pin = false;
-	--o:noBackground();
 	o.currentCharacter = 0
 	o.textspeed = 5
 	o.speedticks = 0
@@ -23,6 +22,7 @@ function DialogueWindow:new(x, y, width, height)
 	o.complete = false
 	o.TalkingSSID = 0
 	o.YesOrNoQuestion = false
+	o:noBackground();
 	
 	
 	return o;

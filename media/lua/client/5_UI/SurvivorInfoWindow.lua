@@ -22,7 +22,7 @@ function SurvivorInfoWindow:new(x, y, width, height)
 	o = ISCollapsableWindow:new(x, y, width, height);
 	setmetatable(o, self);
 	self.__index = self;
-	o.title = getContextMenuText("SurvivorInfo");
+	o.title = "SurvivorInfo";
 	o.pin = false;
 	o:noBackground();
 	return o;
